@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单确认 - liuliu的商城</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* 头部 */
+        .header {
+            background-color: #fff;
+            padding: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .header-title {
+            font-size: 20px;
+            color: #666;
+        }
+
+        /* 主要内容 */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .section {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #007bff;
+        }
+
+        /* 收货地址 */
+        .address-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .address-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .address-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.2);
+        }
+
+        .address-card.selected {
+            border-color: #007bff;
+            background-color: #f0f8ff;
+        }
+
+        .address-default {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #e63946;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .address-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .address-phone {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .address-detail {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .no-address {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .add-address-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .add-address-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* 商品列表 */
+        .product-list {
+            border-top: 1px solid #eee;
+        }
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .product-item:last-child {
+            border-bottom: none;
+        }
+
+        .product-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-right: 15px;
+        }
+
+        .product-info {
+            flex-grow: 1;
+        }
+
+        .product-name {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .product-price {
+            color: #e63946;
+            font-size: 14px;
+        }
+
+        .product-quantity {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .product-subtotal {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e63946;
+            text-align: right;
+            min-width: 100px;
+        }
+
+        /* 订单摘要 */
+        .order-summary {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+
+        .summary-row.total {
+            font-size: 20px;
+            font-weight: 600;
+            color: #e63946;
+            padding-top: 15px;
+            border-top: 2px solid #ddd;
+        }
+
+        /* 支付方式 */
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .payment-method {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method:hover {
+            border-color: #007bff;
+        }
+
+        .payment-method.selected {
+            border-color: #007bff;
+            background-color: #f0f8ff;
+        }
+
+        .payment-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .payment-name {
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* 备注 */
+        .remark-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .remark-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        /* 提交按钮 */
+        .submit-section {
+            margin-top: 30px;
+            text-align: right;
+        }
+
+        .submit-btn {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 15px 60px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background-color: #218838;
+        }
+
+        .submit-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* 返回按钮 */
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 8px 20px;
+            background-color: #6c757d;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background-color: #5a6268;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .product-item {
+                flex-wrap: wrap;
+            }
+
+            .product-img {
+                width: 60px;
+                height: 60px;
+            }
+
+            .product-subtotal {
+                width: 100%;
+                text-align: left;
+                margin-top: 10px;
+            }
+
+            .address-list,
+            .payment-methods {
+                grid-template-columns: 1fr;
+            }
+
+            .submit-btn {
+                width: 100%;
+                padding: 12px 30px;
+            }
+        }
+
+        /* 加载中 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部 -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">liuliu的商城</div>
+            <div class="header-title">订单确认</div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <div class="container">
+        <a href="index.html" class="back-btn">← 返回购物</a>
+
+        <div class="main-content">
+            <!-- 收货地址 -->
+            <div class="section">
+                <h2 class="section-title">1. 选择收货地址</h2>
+                <div id="addressList" class="address-list">
+                    <div class="loading">正在加载地址...</div>
+                </div>
+            </div>
+
+            <!-- 商品清单 -->
+            <div class="section">
+                <h2 class="section-title">2. 确认订单商品</h2>
+                <div id="productList" class="product-list">
+                    <div class="loading">正在加载商品...</div>
+                </div>
+            </div>
+
+            <!-- 支付方式 -->
+            <div class="section">
+                <h2 class="section-title">3. 选择支付方式</h2>
+                <div class="payment-methods">
+                    <div class="payment-method selected" data-method="alipay">
+                        <div class="payment-icon">💳</div>
+                        <div class="payment-name">支付宝</div>
+                    </div>
+                    <div class="payment-method" data-method="wechat">
+                        <div class="payment-icon">💚</div>
+                        <div class="payment-name">微信支付</div>
+                    </div>
+                    <div class="payment-method" data-method="bank">
+                        <div class="payment-icon">🏦</div>
+                        <div class="payment-name">银行卡</div>
+                    </div>
+                    <div class="payment-method" data-method="cod">
+                        <div class="payment-icon">💰</div>
+                        <div class="payment-name">货到付款</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 订单备注 -->
+            <div class="section">
+                <h2 class="section-title">4. 订单备注（选填）</h2>
+                <textarea id="remarkInput" class="remark-input" placeholder="如有特殊需求，请在此填写..."></textarea>
+            </div>
+
+            <!-- 订单摘要 -->
+            <div class="section">
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <span>商品总价：</span>
+                        <span id="goodsTotal">¥ 0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>运费：</span>
+                        <span id="shippingFee">¥ 0.00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>应付总额：</span>
+                        <span id="orderTotal">¥ 0.00</span>
+                    </div>
+                </div>
+
+                <div class="submit-section">
+                    <button id="submitBtn" class="submit-btn">提交订单</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入API工具 -->
+    <script src="js/api.js"></script>
+
+    <script>
+        // 订单数据
+        let orderData = {
+            cartItems: [],
+            selectedAddress: null,
+            paymentMethod: 'alipay',
+            remark: '',
+            totalAmount: 0
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 检查登录状态
+            checkLoginStatus();
+
+            // 加载购物车数据
+            loadCartData();
+
+            // 加载地址列表
+            loadAddresses();
+
+            // 绑定事件
+            bindEvents();
+        });
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            const userToken = localStorage.getItem('user_token');
+            if (!userToken) {
+                alert('请先登录！');
+                window.location.href = '登录.html';
+                return false;
+            }
+            return true;
+        }
+
+        // 加载购物车数据
+        function loadCartData() {
+            const cartJson = localStorage.getItem('shoppingCart');
+            if (!cartJson) {
+                alert('购物车为空！');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                orderData.cartItems = JSON.parse(cartJson);
+                if (orderData.cartItems.length === 0) {
+                    alert('购物车为空！');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                renderProducts();
+                calculateTotal();
+            } catch (e) {
+                console.error('解析购物车数据失败:', e);
+                alert('购物车数据错误！');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // 渲染商品列表
+        function renderProducts() {
+            const productList = document.getElementById('productList');
+            productList.innerHTML = '';
+
+            orderData.cartItems.forEach(item => {
+                const productItem = document.createElement('div');
+                productItem.className = 'product-item';
+                productItem.innerHTML = `
+                    <img src="${item.image || 'https://picsum.photos/80/80'}" alt="${item.name}" class="product-img">
+                    <div class="product-info">
+                        <div class="product-name">${item.name}</div>
+                        <div class="product-price">¥ ${item.price.toFixed(2)}</div>
+                        <div class="product-quantity">数量：${item.quantity}</div>
+                    </div>
+                    <div class="product-subtotal">¥ ${(item.price * item.quantity).toFixed(2)}</div>
+                `;
+                productList.appendChild(productItem);
+            });
+        }
+
+        // 加载地址列表
+        async function loadAddresses() {
+            const addressList = document.getElementById('addressList');
+            
+            try {
+                // 尝试从API加载地址
+                const result = await api.getAddresses();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    renderAddresses(result.data);
+                    // 自动选择默认地址
+                    const defaultAddr = result.data.find(addr => addr.is_default);
+                    if (defaultAddr) {
+                        orderData.selectedAddress = defaultAddr;
+                    } else {
+                        orderData.selectedAddress = result.data[0];
+                    }
+                } else {
+                    // 没有地址，显示提示
+                    loadLocalAddresses();
+                    // addressList.innerHTML = `
+                    //     <div class="no-address">
+                    //         <p>您还没有收货地址</p>
+                    //         <a href="vip.html" class="add-address-btn">去添加地址</a>
+                    //     </div>
+                    // `;
+                }
+            } catch (error) {
+                console.error('加载地址失败:', error);
+                // API失败，尝试从本地存储加载地址（兼容vip.html的地址数据）
+                loadLocalAddresses();
+            }
+        }
+
+        // 从本地存储加载地址（兼容性处理）
+        function loadLocalAddresses() {
+            const addressList = document.getElementById('addressList');
+            
+            // 模拟地址数据（实际应该从API获取）
+            const mockAddresses = [
+                {
+                    id: 1,
+                    receiver_name: '收货人',
+                    phone: '13800138000',
+                    province: '云南省',
+                    city: '普洱市',
+                    area: '思茅区',
+                    detail_address: '请在个人中心添加收货地址',
+                    is_default: 1
+                }
+            ];
+
+            renderAddresses(mockAddresses);
+            orderData.selectedAddress = mockAddresses[0];
+        }
+
+        // 渲染地址列表
+        function renderAddresses(addresses) {
+            const addressList = document.getElementById('addressList');
+            addressList.innerHTML = '';
+
+            addresses.forEach(addr => {
+                const addressCard = document.createElement('div');
+                addressCard.className = 'address-card';
+                if (orderData.selectedAddress && orderData.selectedAddress.id === addr.id) {
+                    addressCard.classList.add('selected');
+                }
+                
+                addressCard.innerHTML = `
+                    ${addr.is_default ? '<div class="address-default">默认</div>' : ''}
+                    <div class="address-name">${addr.receiver_name}</div>
+                    <div class="address-phone">${addr.phone}</div>
+                    <div class="address-detail">
+                        ${addr.province} ${addr.city} ${addr.area} ${addr.detail_address}
+                    </div>
+                `;
+                
+                addressCard.addEventListener('click', () => {
+                    selectAddress(addr);
+                });
+                
+                addressList.appendChild(addressCard);
+            });
+        }
+
+        // 选择地址
+        function selectAddress(address) {
+            orderData.selectedAddress = address;
+            
+            // 更新UI
+            document.querySelectorAll('.address-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+        }
+
+        // 绑定事件
+        function bindEvents() {
+            // 支付方式选择
+            document.querySelectorAll('.payment-method').forEach(method => {
+                method.addEventListener('click', function() {
+                    document.querySelectorAll('.payment-method').forEach(m => {
+                        m.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    orderData.paymentMethod = this.dataset.method;
+                });
+            });
+
+            // 备注输入
+            document.getElementById('remarkInput').addEventListener('input', function() {
+                orderData.remark = this.value.trim();
+            });
+
+            // 提交订单
+            document.getElementById('submitBtn').addEventListener('click', submitOrder);
+        }
+
+        // 计算总金额
+        function calculateTotal() {
+            const goodsTotal = orderData.cartItems.reduce((total, item) => {
+                return total + (item.price * item.quantity);
+            }, 0);
+
+            const shippingFee = goodsTotal >= 99 ? 0 : 10; // 满99包邮
+            const orderTotal = goodsTotal + shippingFee;
+
+            orderData.totalAmount = orderTotal;
+
+            document.getElementById('goodsTotal').textContent = `¥ ${goodsTotal.toFixed(2)}`;
+            document.getElementById('shippingFee').textContent = shippingFee === 0 ? '免运费' : `¥ ${shippingFee.toFixed(2)}`;
+            document.getElementById('orderTotal').textContent = `¥ ${orderTotal.toFixed(2)}`;
+        }
+
+        // 提交订单
+        async function submitOrder() {
+            // 验证地址
+            if (!orderData.selectedAddress) {
+                alert('请选择收货地址！');
+                return;
+            }
+
+            // 验证商品
+            if (orderData.cartItems.length === 0) {
+                alert('购物车为空！');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '提交中...';
+
+            try {
+                // 调用API创建订单
+                const result = await api.createOrder({
+                    items: orderData.cartItems,
+                    address_id: orderData.selectedAddress.id,
+                    payment_method: orderData.paymentMethod,
+                    remark: orderData.remark
+                });
+                
+                if (result.success) {
+                    // 清空购物车
+                    localStorage.removeItem('shoppingCart');
+                    
+                    // 保存订单信息
+                    const orderInfo = {
+                        orderNo: result.data.order_no,
+                        orderId: result.data.order_id,
+                        totalAmount: orderData.totalAmount,
+                        address: orderData.selectedAddress,
+                        items: orderData.cartItems,
+                        paymentMethod: orderData.paymentMethod,
+                        createTime: new Date().toLocaleString('zh-CN')
+                    };
+                    localStorage.setItem('lastOrder', JSON.stringify(orderInfo));
+                    
+                    // 跳转到订单成功页面
+                    window.location.href = 'order-success.html';
+                } else {
+                    throw new Error(result.message || '订单创建失败');
+                }
+
+            } catch (error) {
+                console.error('提交订单失败:', error);
+                alert('订单提交失败：' + error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = '提交订单';
+            }
+        }
+    </script>
+</body>
+</html>
+
